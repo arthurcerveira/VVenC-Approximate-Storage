@@ -70,7 +70,7 @@ namespace po = apputils::df::program_options_lite;
 
 // <Arthur>
 double m_deblockingFilterReadBER;  // BER para leitura no buffer de reconstrução usado pelas operações de filtros
-double m_deblockingFilterWriteBER; // BER para leitura no buffer de reconstrução usado pelas operações de filtros
+double m_deblockingFilterWriteBER; // BER para escrita no buffer de reconstrução usado pelas operações de filtros
 // <Arthur/>
 
 namespace apputils {

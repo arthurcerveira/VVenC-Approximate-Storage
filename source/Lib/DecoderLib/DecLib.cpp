@@ -70,6 +70,14 @@ THE POSSIBILITY OF SUCH DAMAGE.
 #include "AnnexBread.h"
 #include "NALread.h"
 
+// <Arthur>
+#include "CommonLib/approx.h"
+#include "apputils/VVEncAppCfg.h"
+extern double m_deblockingFilterReadBER;  // BER para leitura no buffer de reconstrução usado pelas operações de filtros
+extern double m_deblockingFilterWriteBER; // BER para escrita no buffer de reconstrução usado pelas operações de filtros
+extern int *m_inputBitDepth;
+// <Arthur/>
+
 //! \ingroup DecoderLib
 //! \{
 
@@ -557,10 +565,53 @@ void DecLib::executeLoopFilters()
     DTRACE_CRC(g_trace_ctx, D_CRC, cs, cs.getRecoBuf());
   }
 
+  // <Arthur>
+  // Ponteiros para buffers usados nas operações de filtro
+  Pel *beginYRecoBuffer, *endYRecoBuffer;
+  Pel *beginCbRecoBuffer, *endCbRecoBuffer;
+  Pel *beginCrRecoBuffer, *endCrRecoBuffer;
+
+  int YRecoBufferStride;
+  int CbRecoBufferStride, CrRecoBufferStride;
+
+  // Buffer reconstruído Y
+  beginYRecoBuffer = m_pic->m_bufs[PIC_RECONSTRUCTION].getOrigin(COMP_Y);
+  YRecoBufferStride = m_pic->m_bufs[PIC_RECONSTRUCTION].getOriginArea(COMP_Y);
+  endYRecoBuffer = beginYRecoBuffer + YRecoBufferStride - 1;
+
+  // Buffer reconstruído Cb
+  beginCbRecoBuffer = m_pic->m_bufs[PIC_RECONSTRUCTION].getOrigin(COMP_Cb);
+  CbRecoBufferStride = m_pic->m_bufs[PIC_RECONSTRUCTION].getOriginArea(COMP_Cb);
+  endCbRecoBuffer = beginCbRecoBuffer + CbRecoBufferStride - 1;
+
+  // Buffer reconstruído Cr
+  beginCrRecoBuffer = m_pic->m_bufs[PIC_RECONSTRUCTION].getOrigin(COMP_Cr);
+  CrRecoBufferStride = m_pic->m_bufs[PIC_RECONSTRUCTION].getOriginArea(COMP_Cr);
+  endCrRecoBuffer = beginCrRecoBuffer + CrRecoBufferStride - 1;
+
+  // Coloca bit depth para limitar os bit flips aleatórios dentro dos bits usados
+  set_bit_depth(m_inputBitDepth[COMP_Y]);
+
+  add_approx((unsigned long long)beginYRecoBuffer, (unsigned long long)endYRecoBuffer);
+  add_approx((unsigned long long)beginCbRecoBuffer, (unsigned long long)endCbRecoBuffer);
+  add_approx((unsigned long long)beginCrRecoBuffer, (unsigned long long)endCrRecoBuffer);
+
+  set_read_ber(m_deblockingFilterReadBER);
+  set_write_ber(m_deblockingFilterWriteBER);
+  // <Arthur/>
 
   // deblocking filter
   m_cLoopFilter.loopFilterPic( cs, false );
   CS::setRefinedMotionField(cs);
+
+  // <Arthur>
+  set_read_ber(0.0);
+  set_write_ber(0.0);
+  remove_approx((unsigned long long)beginYRecoBuffer, (unsigned long long)endYRecoBuffer);
+  remove_approx((unsigned long long)beginCbRecoBuffer, (unsigned long long)endCbRecoBuffer);
+  remove_approx((unsigned long long)beginCrRecoBuffer, (unsigned long long)endCrRecoBuffer);
+  // <Arthur/>
+
   DTRACE(g_trace_ctx, D_CRC, "LoopFilter");
   DTRACE_CRC(g_trace_ctx, D_CRC, cs, cs.getRecoBuf());
 
