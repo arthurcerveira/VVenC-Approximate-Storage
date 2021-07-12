@@ -68,6 +68,11 @@ THE POSSIBILITY OF SUCH DAMAGE.
 using namespace std;
 namespace po = apputils::df::program_options_lite;
 
+// <Arthur>
+double m_deblockingFilterReadBER;  // BER para leitura no buffer de reconstrução usado pelas operações de filtros
+double m_deblockingFilterWriteBER; // BER para leitura no buffer de reconstrução usado pelas operações de filtros
+// <Arthur/>
+
 namespace apputils {
 
 //! \ingroup EncoderApp
@@ -637,7 +642,11 @@ bool VVEncAppCfg::parseCfgFF( int argc, char* argv[] )
   ("FrameRate,-fr",                                   m_FrameRate,                                      "Frame rate")
   ("FrameSkip,-fs",                                   m_FrameSkip,                                      "Number of frames to skip at start of input YUV")
   ("TicksPerSecond",                                  m_TicksPerSecond,                                 "Ticks Per Second for dts generation, ( 1..27000000)")
-
+  // <Arthur>
+  // Parametros para aproximacoes de memoria
+  ("DFReadBER", m_deblockingFilterReadBER, (double)0.0, "Bit Error Rate for memory readings on reconstruction buffer used by deblocking filter operations")
+  ("DFWriteBER", m_deblockingFilterWriteBER, (double)0.0, "Bit Error Rate for memory writings on reconstruction buffer used by deblocking filter operations")
+  // <Arthur/>
   ("segment",                                         toSegment,                                        "when encoding multiple separate segments, specify segment position to enable segment concatenation (first, mid, last) [off]\n"
                                                                                                         "first: first segment           \n"
                                                                                                         "mid  : all segments between first and last segment\n"
