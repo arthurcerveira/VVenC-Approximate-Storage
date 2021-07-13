@@ -62,18 +62,23 @@ THE POSSIBILITY OF SUCH DAMAGE.
 #include "apputils/VVEncAppCfg.h"
 #include "vvenc/vvenc.h"
 
+#include "CommonLib/ApproxControl.h"
+
 #define MACRO_TO_STRING_HELPER(val) #val
 #define MACRO_TO_STRING(val) MACRO_TO_STRING_HELPER(val)
 
 using namespace std;
 namespace po = apputils::df::program_options_lite;
 
+
 // <Arthur>
-double m_deblockingFilterReadBER;  // BER para leitura no buffer de reconstrução usado pelas operações de filtros
-double m_deblockingFilterWriteBER; // BER para escrita no buffer de reconstrução usado pelas operações de filtros
+//double m_deblockingFilterReadBER;  // BER para leitura no buffer de reconstrução usado pelas operações de filtros
+//double m_deblockingFilterWriteBER; // BER para escrita no buffer de reconstrução usado pelas operações de filtros
 // <Arthur/>
 
 namespace apputils {
+
+
 
 //! \ingroup EncoderApp
 //! \{
@@ -387,6 +392,9 @@ bool VVEncAppCfg::parseCfg( int argc, char* argv[] )
   bool do_full_help           = false;
   int  warnUnknowParameter    = 0;
 
+  //<Felipe>
+  vvenc::ApproxControl::init();
+
   //
   // link custom formated configuration parameters with istream reader
   //
@@ -486,6 +494,8 @@ bool VVEncAppCfg::parseCfg( int argc, char* argv[] )
   ("hrdparameterspresent,-hrd", toHrd,                 "Emit VUI HRD information (auto(-1),off(0),on(1); default: auto - only if needed by dependent options)",  true)
   ("decodedpicturehash,-dph",   toHashType,            "Control generation of decode picture hash SEI messages, (0:off, 1:md5, 2:crc, 3:checksum)")
   ;
+
+  vvenc::ApproxControl::m_inputBitDepth = m_internalBitDepth[0];
   
   if ( vvenc_is_tracing_enabled() )
   {
@@ -644,14 +654,16 @@ bool VVEncAppCfg::parseCfgFF( int argc, char* argv[] )
   ("TicksPerSecond",                                  m_TicksPerSecond,                                 "Ticks Per Second for dts generation, ( 1..27000000)")
   // <Arthur>
   // Parametros para aproximacoes de memoria
-  ("DFReadBER", m_deblockingFilterReadBER, (double)0.0, "Bit Error Rate for memory readings on reconstruction buffer used by deblocking filter operations")
-  ("DFWriteBER", m_deblockingFilterWriteBER, (double)0.0, "Bit Error Rate for memory writings on reconstruction buffer used by deblocking filter operations")
+  ("DFReadBER", vvenc::ApproxControl::m_deblockingFilterReadBER, (double)0.0, "Bit Error Rate for memory readings on reconstruction buffer used by deblocking filter operations")
+  ("DFWriteBER", vvenc::ApproxControl::m_deblockingFilterWriteBER, (double)0.0, "Bit Error Rate for memory writings on reconstruction buffer used by deblocking filter operations")
   // <Arthur/>
   ("segment",                                         toSegment,                                        "when encoding multiple separate segments, specify segment position to enable segment concatenation (first, mid, last) [off]\n"
                                                                                                         "first: first segment           \n"
                                                                                                         "mid  : all segments between first and last segment\n"
                                                                                                         "last : last segment")
   ;
+
+
 
   opts.setSubSection("Output options");
   opts.addOptions()

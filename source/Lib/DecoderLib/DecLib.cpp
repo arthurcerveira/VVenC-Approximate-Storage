@@ -62,6 +62,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 #include "EncoderLib/EncGOP.h"
+#include "CommonLib/ApproxControl.h"
 
 #include <fstream>
 #include <stdio.h>
@@ -73,9 +74,9 @@ THE POSSIBILITY OF SUCH DAMAGE.
 // <Arthur>
 #include "CommonLib/approx.h"
 #include "apputils/VVEncAppCfg.h"
-extern double m_deblockingFilterReadBER;  // BER para leitura no buffer de reconstrução usado pelas operações de filtros
-extern double m_deblockingFilterWriteBER; // BER para escrita no buffer de reconstrução usado pelas operações de filtros
-extern int *m_inputBitDepth;
+//extern double apputils::m_deblockingFilterReadBER;  // BER para leitura no buffer de reconstrução usado pelas operações de filtros
+//extern double apputils::m_deblockingFilterWriteBER; // BER para escrita no buffer de reconstrução usado pelas operações de filtros
+//extern int *m_inputBitDepth;
 // <Arthur/>
 
 //! \ingroup DecoderLib
@@ -590,14 +591,14 @@ void DecLib::executeLoopFilters()
   endCrRecoBuffer = beginCrRecoBuffer + CrRecoBufferStride - 1;
 
   // Coloca bit depth para limitar os bit flips aleatórios dentro dos bits usados
-  set_bit_depth(m_inputBitDepth[COMP_Y]);
+  set_bit_depth(ApproxControl::m_inputBitDepth); //fix it
 
   add_approx((unsigned long long)beginYRecoBuffer, (unsigned long long)endYRecoBuffer);
   add_approx((unsigned long long)beginCbRecoBuffer, (unsigned long long)endCbRecoBuffer);
   add_approx((unsigned long long)beginCrRecoBuffer, (unsigned long long)endCrRecoBuffer);
 
-  set_read_ber(m_deblockingFilterReadBER);
-  set_write_ber(m_deblockingFilterWriteBER);
+  set_read_ber(ApproxControl::m_deblockingFilterReadBER);
+  set_write_ber(ApproxControl::m_deblockingFilterWriteBER);
   // <Arthur/>
 
   // deblocking filter
