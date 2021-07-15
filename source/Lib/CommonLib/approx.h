@@ -2,6 +2,10 @@
 
 //FILE *debug;
 
+int __attribute__((optimize("O0"))) start_level(int level = 0);
+
+int __attribute__((optimize("O0"))) end_level();
+
 unsigned long long __attribute__((optimize("O0"))) add_approx(unsigned long long start_address, unsigned long long end_address);
 
 unsigned long long __attribute__((optimize("O0"))) remove_approx(unsigned long long start_address, unsigned long long end_address);

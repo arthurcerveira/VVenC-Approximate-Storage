@@ -3,6 +3,16 @@
 
 //FILE *debug;
 
+int __attribute__((optimize("O0"))) start_level(int level /* = 0*/)
+{
+    return level;
+}
+
+int __attribute__((optimize("O0"))) end_level()
+{
+    return 0;
+}
+
 unsigned long long __attribute__((optimize("O0"))) add_approx(unsigned long long start_address, unsigned long long end_address)
 {
     //	debug = fopen("/tmp/memapproxlog", "w");

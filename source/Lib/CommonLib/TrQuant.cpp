@@ -521,22 +521,24 @@ void TrQuant::xT( const TransformUnit& tu, const ComponentID compID, const CPelB
     // Calcula tamanho do buffer
     TCoeff *beginBuffer, *endBuffer;
 
-    int bufferStride = (width * height);
+    int bufferStride = (MAX_CU_SIZE * MAX_CU_SIZE);
 
     beginBuffer = tmp;
     endBuffer = beginBuffer + bufferStride;
 
     // Define valores dos BERs
-    set_read_ber(ApproxControl::m_transformReadBER);
-    set_read_ber(ApproxControl::m_transformReadBER);
-    set_write_ber(ApproxControl::m_transformWriteBER);
-    set_write_ber(ApproxControl::m_transformWriteBER);
+    // set_read_ber(ApproxControl::m_transformReadBER);
+    // set_read_ber(ApproxControl::m_transformReadBER);
+    // set_write_ber(ApproxControl::m_transformWriteBER);
+    // set_write_ber(ApproxControl::m_transformWriteBER);
 
-    set_bit_depth(ApproxControl::m_inputBitDepth);
-    set_bit_depth(ApproxControl::m_inputBitDepth);
+    // set_bit_depth(ApproxControl::m_inputBitDepth);
+    // set_bit_depth(ApproxControl::m_inputBitDepth);
 
     // Adiciona aproximações aos buffers
-    add_approx((unsigned long long)beginBuffer, (unsigned long long)endBuffer);
+    add_approx((size_t)beginBuffer, (size_t)endBuffer);
+
+    start_level();
     // <Arthur/>
 
     fastFwdTrans[trTypeHor][transformWidthIndex](block, tmp, shift_1st, height, 0, skipWidth);
@@ -544,13 +546,15 @@ void TrQuant::xT( const TransformUnit& tu, const ComponentID compID, const CPelB
 
     // <Arthur>
     // Define BERs como 0
-    set_read_ber(0.0);
-    set_read_ber(0.0);
-    set_write_ber(0.0);
-    set_write_ber(0.0);
+    // set_read_ber(0.0);
+    // set_read_ber(0.0);
+    // set_write_ber(0.0);
+    // set_write_ber(0.0);
+
+    end_level();
 
     // Remove aproximações do buffer
-    remove_approx((unsigned long long)beginBuffer, (unsigned long long)endBuffer);
+    remove_approx((size_t)beginBuffer, (size_t)endBuffer);
 
     // Libera memória do temp manualmente
     free(tmp);
@@ -625,36 +629,32 @@ void TrQuant::xIT( const TransformUnit& tu, const ComponentID compID, const CCoe
     // Calcula tamanho do buffer
     TCoeff *beginBuffer, *endBuffer;
 
-    int bufferStride = (width * height);
+    int bufferStride = (MAX_CU_SIZE * MAX_CU_SIZE);
 
     beginBuffer = tmp;
     endBuffer = beginBuffer + bufferStride;
 
     // Define valores dos BERs
-    set_read_ber(ApproxControl::m_transformReadBER);
-    set_read_ber(ApproxControl::m_transformReadBER);
-    set_write_ber(ApproxControl::m_transformWriteBER);
-    set_write_ber(ApproxControl::m_transformWriteBER);
+    // set_read_ber(ApproxControl::m_transformReadBER);
+    // set_read_ber(ApproxControl::m_transformReadBER);
+    // set_write_ber(ApproxControl::m_transformWriteBER);
+    // set_write_ber(ApproxControl::m_transformWriteBER);
 
     set_bit_depth(ApproxControl::m_inputBitDepth);
     set_bit_depth(ApproxControl::m_inputBitDepth);
 
     // Adiciona aproximações aos buffers
-    add_approx((unsigned long long)beginBuffer, (unsigned long long)endBuffer);
-    // <Arthur/>
+    add_approx((size_t)beginBuffer, (size_t)endBuffer);
+
+    start_level();
 
     fastInvTrans[trTypeVer][transformHeightIndex](pCoeff.buf, tmp, shift_1st, width, skipWidth, skipHeight, clipMinimum, clipMaximum);
     fastInvTrans[trTypeHor][transformWidthIndex](tmp, block, shift_2nd, height, 0, skipWidth, clipMinimum, clipMaximum);
 
-    // <Arthur>
-    // Define BERs como 0
-    set_read_ber(0.0);
-    set_read_ber(0.0);
-    set_write_ber(0.0);
-    set_write_ber(0.0);
+    end_level();
 
     // Remove aproximações do buffer
-    remove_approx((unsigned long long)beginBuffer, (unsigned long long)endBuffer);
+    remove_approx((size_t)beginBuffer, (size_t)endBuffer);
 
     // Libera memória do temp manualmente
     free(tmp);
