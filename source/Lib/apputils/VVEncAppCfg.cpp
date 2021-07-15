@@ -62,6 +62,10 @@ THE POSSIBILITY OF SUCH DAMAGE.
 #include "apputils/VVEncAppCfg.h"
 #include "vvenc/vvenc.h"
 
+// <Arthur>
+#include "CommonLib/ApproxControl.h"
+// <Arthur/>
+
 #define MACRO_TO_STRING_HELPER(val) #val
 #define MACRO_TO_STRING(val) MACRO_TO_STRING_HELPER(val)
 
@@ -564,6 +568,8 @@ bool VVEncAppCfg::parseCfgFF( int argc, char* argv[] )
   bool do_help                = false;
   bool do_expert_help         = false;
   int  warnUnknowParameter    = 0;
+  
+  vvenc::ApproxControl::init();
 
   std::string writeCfg = "";
   //
@@ -638,6 +644,11 @@ bool VVEncAppCfg::parseCfgFF( int argc, char* argv[] )
   ("FrameSkip,-fs",                                   m_FrameSkip,                                      "Number of frames to skip at start of input YUV")
   ("TicksPerSecond",                                  m_TicksPerSecond,                                 "Ticks Per Second for dts generation, ( 1..27000000)")
 
+  // <Arthur>
+  ("TransformReadBER,-trber", vvenc::ApproxControl::m_transformReadBER, (double)0.0, "Bit Error Rate for memory readings on transform buffer")
+  ("TransformWriteBER,-twber", vvenc::ApproxControl::m_transformWriteBER, (double)0.0, "Bit Error Rate for memory writings on transform buffer")
+  // <Arthur/>
+
   ("segment",                                         toSegment,                                        "when encoding multiple separate segments, specify segment position to enable segment concatenation (first, mid, last) [off]\n"
                                                                                                         "first: first segment           \n"
                                                                                                         "mid  : all segments between first and last segment\n"
@@ -698,6 +709,8 @@ bool VVEncAppCfg::parseCfgFF( int argc, char* argv[] )
   ("WarnUnknowParameter,w",                           warnUnknowParameter,                              "warn for unknown configuration parameters instead of failing")
   ("SIMD",                                            ignoreParams,                                     "SIMD extension to use (SCALAR, SSE41, SSE42, AVX, AVX2, AVX512), default: the highest supported extension")
   ;
+
+  vvenc::ApproxControl::m_inputBitDepth = m_internalBitDepth[0];
 
     if ( vvenc_is_tracing_enabled() )
   {
