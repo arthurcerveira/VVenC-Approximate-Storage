@@ -392,9 +392,6 @@ bool VVEncAppCfg::parseCfg( int argc, char* argv[] )
   bool do_full_help           = false;
   int  warnUnknowParameter    = 0;
 
-  //<Felipe>
-  vvenc::ApproxControl::init();
-
   //
   // link custom formated configuration parameters with istream reader
   //
@@ -494,8 +491,6 @@ bool VVEncAppCfg::parseCfg( int argc, char* argv[] )
   ("hrdparameterspresent,-hrd", toHrd,                 "Emit VUI HRD information (auto(-1),off(0),on(1); default: auto - only if needed by dependent options)",  true)
   ("decodedpicturehash,-dph",   toHashType,            "Control generation of decode picture hash SEI messages, (0:off, 1:md5, 2:crc, 3:checksum)")
   ;
-
-  vvenc::ApproxControl::m_inputBitDepth = m_internalBitDepth[0];
   
   if ( vvenc_is_tracing_enabled() )
   {
@@ -576,6 +571,9 @@ bool VVEncAppCfg::parseCfg( int argc, char* argv[] )
  */
 bool VVEncAppCfg::parseCfgFF( int argc, char* argv[] )
 {
+  //<Felipe>
+  vvenc::ApproxControl::init();
+
   bool do_help                = false;
   bool do_expert_help         = false;
   int  warnUnknowParameter    = 0;
@@ -719,6 +717,8 @@ bool VVEncAppCfg::parseCfgFF( int argc, char* argv[] )
   ("WarnUnknowParameter,w",                           warnUnknowParameter,                              "warn for unknown configuration parameters instead of failing")
   ("SIMD",                                            ignoreParams,                                     "SIMD extension to use (SCALAR, SSE41, SSE42, AVX, AVX2, AVX512), default: the highest supported extension")
   ;
+  
+  vvenc::ApproxControl::m_inputBitDepth = m_internalBitDepth[0];
 
     if ( vvenc_is_tracing_enabled() )
   {
