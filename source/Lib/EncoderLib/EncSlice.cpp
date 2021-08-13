@@ -1206,7 +1206,15 @@ void EncSlice::encodeSliceData( Picture* pic )
       }
     }
 
+    // <Arthur>
+    // Likely place to activate CABAC BERs
+    // <Arthur/>
+
     m_CABACWriter.coding_tree_unit( cs, ctuArea, prevQP, ctuRsAddr );
+
+    // <Arthur>
+    // Deactivate CABAC BERs
+    // <Arthur/>
 
     // store probabilities of second CTU in line into buffer
     if( ctuXPosInCtus == tileXPosInCtus && wavefrontsEnabled )

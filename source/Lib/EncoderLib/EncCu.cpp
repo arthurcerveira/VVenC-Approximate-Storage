@@ -345,7 +345,16 @@ void EncCu::encodeCtu( Picture* pic, int (&prevQP)[MAX_NUM_CH], uint32_t ctuXPos
   xCompressCtu( cs, ctuArea, ctuRsAddr, prevQP );
 
   m_CABACEstimator->resetBits();
+
+  // <Arthur>
+  // Possible place to activate CABAC BERs
+  // <Arthur/>
+
   m_CABACEstimator->coding_tree_unit( cs, ctuArea, prevQP, ctuRsAddr, true, true );
+
+  // <Arthur>
+  // Deactivate CABAC BERs
+  // <Arthur/>
 
   // Store probabilities of second CTU in line into buffer - used only if wavefront-parallel-processing is enabled.
   if( ctuXPosInCtus == tileXPosInCtus && m_pcEncCfg->m_entropyCodingSyncEnabled )
