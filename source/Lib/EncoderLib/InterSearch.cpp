@@ -1966,6 +1966,10 @@ void InterSearch::xMotionEstimation(CodingUnit& cu, CPelUnitBuf& origBuf, RefPic
   m_pcRdCost->setPredictor( predQuarter );
   m_pcRdCost->setCostScale(2);
 
+  // <Arthur>
+  // Possible place to add approx and activate Inter BERs
+  // <Arthur/>  
+
   //  Do integer search
   if( ( m_motionEstimationSearchMethod == VVENC_MESEARCH_FULL ) || bBi || bQTBTMV )
   {
@@ -2054,6 +2058,10 @@ void InterSearch::xMotionEstimation(CodingUnit& cu, CPelUnitBuf& origBuf, RefPic
     xPatternSearchIntRefine( cu, cStruct, rcMv, rcMvPred, riMVPIdx, ruiBits, ruiCost, amvpInfo, fWeight);
   }
   DTRACE(g_trace_ctx, D_ME, "   MECost<L%d,%d>: %6d (%d)  MV:%d,%d\n", (int)refPicList, (int)bBi, ruiCost, ruiBits, rcMv.hor << 2, rcMv.ver << 2);
+
+  // <Arthur>
+  // Deactivate Inter BERs
+  // <Arthur/>  
 }
 
 
