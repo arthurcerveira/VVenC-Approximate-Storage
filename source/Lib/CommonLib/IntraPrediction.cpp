@@ -362,6 +362,10 @@ void IntraPrediction::predIntraAng( const ComponentID compId, PelBuf& piPred, co
   const CPelBuf& srcBuf = CPelBuf(getPredictorPtr(compID), srcStride, srcHStride);
   const ClpRng& clpRng(cu.cs->slice->clpRngs[compID]);
 
+  // <Arthur>
+  // Activate Intra BERs
+  // <Arthur/>
+
   switch (uiDirMode)
   {
     case(PLANAR_IDX): xPredIntraPlanar(piPred, srcBuf); break;
@@ -377,6 +381,11 @@ void IntraPrediction::predIntraAng( const ComponentID compId, PelBuf& piPred, co
       IntraPredSampleFilter(piPred, srcBuf);
     }
   }
+
+  // <Arthur>
+  // Deactivate Intra BERs
+  // <Arthur/>
+
 }
 
 void IntraPrediction::predIntraChromaLM(const ComponentID compID, PelBuf& piPred, const CodingUnit& cu, const CompArea& chromaArea, int intraDir)
@@ -730,13 +739,26 @@ void IntraPrediction::initIntraPatternChType(const CodingUnit &cu, const CompAre
 
   setReferenceArrayLengths(area);
 
+  // <Arthur>
+  // Activate Intra Write BER
+  // <Arthur/>
+
   // ----- Step 1: unfiltered reference samples -----
   xFillReferenceSamples( cs.picture->getRecoBuf( area ), refBufUnfiltered, area, cu );
   // ----- Step 2: filtered reference samples -----
+
+  // <Arthur>
+  // Activate Intra Read BER
+  // <Arthur/>
+
   if( m_ipaParam.refFilterFlag || forceRefFilterFlag )
   {
     xFilterReferenceSamples( refBufUnfiltered, refBufFiltered, area, *cs.sps, cu.multiRefIdx );
   }
+
+  // <Arthur>
+  // Deactivate both Intra BERs
+  // <Arthur/>
 }
 
 void IntraPrediction::reset()
@@ -1503,6 +1525,11 @@ void IntraPrediction::xGetLMParameters(const CodingUnit& cu, const ComponentID c
   int cntT, cntL;
   cntT = cntL = 0;
   int cnt = 0;
+
+  // <Arthur>
+  // Activate Intra BERs
+  // <Arthur/>
+
   if (aboveAvailable)
   {
     cntT = std::min(actualTopTemplateSampNum, (1 + aboveIs4) << 1);
@@ -1526,6 +1553,11 @@ void IntraPrediction::xGetLMParameters(const CodingUnit& cu, const ComponentID c
       selectChromaPix[cnt + cntT] = cur[pos];
     }
   }
+
+  // <Arthur>
+  // Dectivate Intra BERs
+  // <Arthur/>
+
   cnt = cntL + cntT;
 
   if (cnt == 2)
@@ -1601,7 +1633,15 @@ void IntraPrediction::initIntraMip( const CodingUnit& cu )
   const int srcStride  = m_refBufferStride[COMP_Y];
   const int srcHStride = 2;
 
+  // <Arthur>
+  // Activate Intra BERs
+  // <Arthur/>
+
   m_matrixIntraPred.prepareInputForPred(CPelBuf(ptrSrc, srcStride, srcHStride), cu.Y(), cu.slice->sps->bitDepths[CH_L]);
+
+  // <Arthur>
+  // Deactivate Intra BERs
+  // <Arthur/>
 }
 
 void IntraPrediction::predIntraMip( PelBuf &piPred, const CodingUnit& cu )
@@ -1632,6 +1672,11 @@ void IntraPrediction::initIntraPatternChTypeISP(const CodingUnit& cu, const Comp
     (cs.getCURestricted(posLT.offset(-1, 0), cu, CH_L) != NULL);
   bool isAboveAvail =
     (cs.getCURestricted(posLT.offset(0, -1), cu, CH_L) != NULL);
+
+  // <Arthur>
+  // Activate Intra Write BER
+  // <Arthur/>
+
   // ----- Step 1: unfiltered reference samples -----
   if (cu.blocks[area.compID].x == area.x && cu.blocks[area.compID].y == area.y)
   {
@@ -1728,6 +1773,11 @@ void IntraPrediction::initIntraPatternChTypeISP(const CodingUnit& cu, const Comp
       }
     }
   }
+
+  // <Arthur>
+  // Activate Intra Read BER
+  // <Arthur/>
+
   // ----- Step 2: filtered reference samples -----
   if (m_ipaParam.refFilterFlag || forceRefFilterFlag)
   {
@@ -1735,6 +1785,10 @@ void IntraPrediction::initIntraPatternChTypeISP(const CodingUnit& cu, const Comp
     Pel* refBufFiltered = m_refBuffer[area.compID][PRED_BUF_FILTERED];
     xFilterReferenceSamples(refBufUnfiltered, refBufFiltered, area, *cs.sps, cu.multiRefIdx);
   }
+
+  // <Arthur>
+  // Dectivate both Intra BERs
+  // <Arthur/>
 }
 
 void IntraPrediction::setReferenceArrayLengths(const CompArea& area)
