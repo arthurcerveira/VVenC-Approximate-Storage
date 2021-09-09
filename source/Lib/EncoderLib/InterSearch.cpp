@@ -62,6 +62,10 @@ THE POSSIBILITY OF SUCH DAMAGE.
 #include "CommonLib/dtrace_buffer.h"
 #include "CommonLib/TimeProfiler.h"
 
+//<Felipe>
+#include "CommonLib/ApproxInter.h"
+#include "CommonLib/approx.h"
+
 #include <math.h>
 
  //! \ingroup EncoderLib
@@ -1970,6 +1974,15 @@ void InterSearch::xMotionEstimation(CodingUnit& cu, CPelUnitBuf& origBuf, RefPic
   // Possible place to add approx and activate Inter BERs
   // <Arthur/>  
 
+  const Pel *beginBuffer, *endBuffer;
+  
+  beginBuffer = cStruct.piRefY - (ApproxInter::frameBufferWidth * ApproxInter::yMargin + ApproxInter::xMargin); 
+  endBuffer = beginBuffer + (ApproxInter::frameBufferWidth * ApproxInter::frameBufferHeight);
+
+  add_approx((size_t) beginBuffer, (size_t) endBuffer);
+
+  start_level();
+
   //  Do integer search
   if( ( m_motionEstimationSearchMethod == VVENC_MESEARCH_FULL ) || bBi || bQTBTMV )
   {
@@ -2038,6 +2051,10 @@ void InterSearch::xMotionEstimation(CodingUnit& cu, CPelUnitBuf& origBuf, RefPic
     relatedCU.setMv( refPicList, iRefIdxPred, rcMv );
   }
 
+  end_level();
+
+  remove_approx((size_t) beginBuffer, (size_t) endBuffer);
+  
   DTRACE( g_trace_ctx, D_ME, "%d %d %d :MECostFPel<L%d,%d>: %d,%d,%dx%d, %d", DTRACE_GET_COUNTER( g_trace_ctx, D_ME ), cu.slice->poc, 0, ( int ) refPicList, ( int ) bBi, cu.Y().x, cu.Y().y, cu.Y().width, cu.Y().height, ruiCost );
   // sub-pel refinement for sub-pel resolution
   if ( cu.imv == 0 || cu.imv == IMV_HPEL )
@@ -2061,7 +2078,8 @@ void InterSearch::xMotionEstimation(CodingUnit& cu, CPelUnitBuf& origBuf, RefPic
 
   // <Arthur>
   // Deactivate Inter BERs
-  // <Arthur/>  
+  // <Arthur/>
+    
 }
 
 

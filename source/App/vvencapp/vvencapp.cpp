@@ -67,6 +67,8 @@ THE POSSIBILITY OF SUCH DAMAGE.
 #include "apputils/YuvFileIO.h"
 #include "apputils/VVEncAppCfg.h"
 
+#include "../../Lib/CommonLib/ApproxInter.h"
+
 vvencMsgLevel g_verbosity = VVENC_VERBOSE;
 
 void msgFnc( void*, int level, const char* fmt, va_list args )
@@ -132,6 +134,11 @@ int main( int argc, char* argv[] )
   }
 
   int iRet = 0;
+
+  //<Felipe>
+  ApproxInter::init();
+  std::cout << "BBB\n";
+  //</Felipe>
 
   vvenc_set_logging_callback( nullptr, msgFnc );
 

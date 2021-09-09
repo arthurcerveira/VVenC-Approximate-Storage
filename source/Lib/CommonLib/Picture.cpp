@@ -52,6 +52,8 @@ THE POSSIBILITY OF SUCH DAMAGE.
 #include "Picture.h"
 #include "SEI.h"
 
+#include "ApproxInter.h"
+
 #include <math.h>
 
 //! \ingroup CommonLib
@@ -193,8 +195,16 @@ void Picture::create( ChromaFormat _chromaFormat, const Size& size, unsigned _ma
 {
   UnitArea::operator=( UnitArea( _chromaFormat, Area( Position{ 0, 0 }, size ) ) );
   margin            =  _margin;
+
+  //<Felipe>
+  if(ApproxInter::collectBufferSize) {
+    ApproxInter::tmpBool = true;
+  }
+
   const Area a      = Area( Position(), size );
   m_bufs[ PIC_RECONSTRUCTION ].create( _chromaFormat, a, _maxCUSize, _margin, MEMORY_ALIGN_DEF_SIZE );
+
+  //</Felipe>
 
   if( _decoder )
   {

@@ -55,6 +55,9 @@ THE POSSIBILITY OF SUCH DAMAGE.
 #include "Slice.h"
 #include "InterpolationFilter.h"
 
+// <Felipe>
+#include "ApproxInter.h"
+
 //! \ingroup CommonLib
 //! \{
 
@@ -832,10 +835,24 @@ namespace vvenc
       uint32_t area = totalWidth * totalHeight;
       CHECK(!area, "Trying to create a buffer with zero area");
 
-      // <Arthur>
+      // <Arthur> e <Felipe>
       // Atualiza nova variável com tamanho do buffer
+
+      if(ApproxInter::tmpBool && compID == COMP_Y) {
+        ApproxInter::frameBufferWidth = totalWidth;
+        ApproxInter::frameBufferHeight = totalHeight;
+        ApproxInter::xMargin = xmargin;
+        ApproxInter::yMargin = ymargin;
+
+        ApproxInter::collectBufferSize = false;
+        ApproxInter::tmpBool = false; 
+
+        std::cout << extWidth << " " << extHeight << " " << ApproxInter::frameBufferWidth << " " << ApproxInter::frameBufferHeight << " " << ApproxInter::xMargin << " " << ApproxInter::yMargin << std::endl;
+      }
+
+      
       m_origin_area[i] = area;
-      // <Arthur/>
+      // <Arthur/> </Felipe>
 
       m_origin[i] = (Pel *)xMalloc(Pel, area);
       Pel *topLeft = m_origin[i] + totalWidth * ymargin + xmargin;
