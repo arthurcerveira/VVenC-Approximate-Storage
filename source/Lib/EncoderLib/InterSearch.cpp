@@ -1972,17 +1972,6 @@ void InterSearch::xMotionEstimation(CodingUnit& cu, CPelUnitBuf& origBuf, RefPic
   m_pcRdCost->setPredictor( predQuarter );
   m_pcRdCost->setCostScale(2);
 
-  //<Felipe> addApproxIME
-  const Pel *beginBuffer, *endBuffer;
-  
-  beginBuffer = cStruct.piRefY - (ApproxInter::frameBufferWidth * ApproxInter::yMargin + ApproxInter::xMargin); 
-  endBuffer = beginBuffer + (ApproxInter::frameBufferWidth * ApproxInter::frameBufferHeight);
-  
-  add_approx((size_t) beginBuffer, (size_t) endBuffer);
-  
-  start_level();
-  //</Felipe> addApproxIME
-
   //  Do integer search
   if( ( m_motionEstimationSearchMethod == VVENC_MESEARCH_FULL ) || bBi || bQTBTMV )
   {
@@ -2050,11 +2039,6 @@ void InterSearch::xMotionEstimation(CodingUnit& cu, CPelUnitBuf& origBuf, RefPic
     xPatternSearchFast(cu, refPicList, iRefIdxPred, cStruct, rcMv, ruiCost, pIntegerMv2Nx2NPred);
     relatedCU.setMv( refPicList, iRefIdxPred, rcMv );
   }
-
-  //<Felipe> removeApproxIME
-  end_level();
-  remove_approx((size_t) beginBuffer, (size_t) endBuffer);
-  //</Felipe> removeApproxIME
 
   //<Felipe> addApproxFME
   addApproxFME();  
