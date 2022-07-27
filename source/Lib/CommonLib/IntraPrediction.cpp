@@ -57,6 +57,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
 #include "dtrace_next.h"
 
 #include <memory.h>
+#include "approx.h"
 
 //! \ingroup CommonLib
 //! \{
@@ -364,6 +365,8 @@ void IntraPrediction::predIntraAng( const ComponentID compId, PelBuf& piPred, co
 
   // <Arthur>
   // Activate Intra BERs
+  addIntraApprox();
+  start_level();
   // <Arthur/>
 
   switch (uiDirMode)
@@ -384,6 +387,8 @@ void IntraPrediction::predIntraAng( const ComponentID compId, PelBuf& piPred, co
 
   // <Arthur>
   // Deactivate Intra BERs
+  end_level();
+  removeIntraApprox();
   // <Arthur/>
 
 }
@@ -740,16 +745,14 @@ void IntraPrediction::initIntraPatternChType(const CodingUnit &cu, const CompAre
   setReferenceArrayLengths(area);
 
   // <Arthur>
-  // Activate Intra Write BER
+  // Activate Intra BERs
+  addIntraApprox();
+  start_level();
   // <Arthur/>
 
   // ----- Step 1: unfiltered reference samples -----
   xFillReferenceSamples( cs.picture->getRecoBuf( area ), refBufUnfiltered, area, cu );
   // ----- Step 2: filtered reference samples -----
-
-  // <Arthur>
-  // Activate Intra Read BER
-  // <Arthur/>
 
   if( m_ipaParam.refFilterFlag || forceRefFilterFlag )
   {
@@ -758,6 +761,8 @@ void IntraPrediction::initIntraPatternChType(const CodingUnit &cu, const CompAre
 
   // <Arthur>
   // Deactivate both Intra BERs
+  end_level();
+  removeIntraApprox();
   // <Arthur/>
 }
 
@@ -1528,6 +1533,8 @@ void IntraPrediction::xGetLMParameters(const CodingUnit& cu, const ComponentID c
 
   // <Arthur>
   // Activate Intra BERs
+  addIntraApprox();
+  start_level();
   // <Arthur/>
 
   if (aboveAvailable)
@@ -1555,7 +1562,9 @@ void IntraPrediction::xGetLMParameters(const CodingUnit& cu, const ComponentID c
   }
 
   // <Arthur>
-  // Dectivate Intra BERs
+  // Deactivate Intra BERs
+  end_level();
+  removeIntraApprox();
   // <Arthur/>
 
   cnt = cntL + cntT;
@@ -1635,12 +1644,16 @@ void IntraPrediction::initIntraMip( const CodingUnit& cu )
 
   // <Arthur>
   // Activate Intra BERs
+  addIntraApprox();
+  start_level();
   // <Arthur/>
 
   m_matrixIntraPred.prepareInputForPred(CPelBuf(ptrSrc, srcStride, srcHStride), cu.Y(), cu.slice->sps->bitDepths[CH_L]);
 
   // <Arthur>
   // Deactivate Intra BERs
+  end_level();
+  removeIntraApprox();
   // <Arthur/>
 }
 
@@ -1674,7 +1687,9 @@ void IntraPrediction::initIntraPatternChTypeISP(const CodingUnit& cu, const Comp
     (cs.getCURestricted(posLT.offset(0, -1), cu, CH_L) != NULL);
 
   // <Arthur>
-  // Activate Intra Write BER
+  // Activate Intra BERs
+  addIntraApprox();
+  start_level();
   // <Arthur/>
 
   // ----- Step 1: unfiltered reference samples -----
@@ -1774,10 +1789,6 @@ void IntraPrediction::initIntraPatternChTypeISP(const CodingUnit& cu, const Comp
     }
   }
 
-  // <Arthur>
-  // Activate Intra Read BER
-  // <Arthur/>
-
   // ----- Step 2: filtered reference samples -----
   if (m_ipaParam.refFilterFlag || forceRefFilterFlag)
   {
@@ -1787,7 +1798,9 @@ void IntraPrediction::initIntraPatternChTypeISP(const CodingUnit& cu, const Comp
   }
 
   // <Arthur>
-  // Dectivate both Intra BERs
+  // Deactivate both Intra BERs
+  end_level();
+  removeIntraApprox();
   // <Arthur/>
 }
 
@@ -1799,6 +1812,44 @@ void IntraPrediction::setReferenceArrayLengths(const CompArea& area)
 
   m_leftRefLength = (height << 1);
   m_topRefLength = (width << 1);
+}
+
+void IntraPrediction::addIntraApprox() {
+  Pel *beginYNeighborBuffer, *endYNeighborBuffer;
+  Pel *beginCbNeighborBuffer, *endCbNeighborBuffer;
+  Pel *beginCrNeighborBuffer, *endCrNeighborBuffer;
+
+  int bufferStride = (MAX_CU_SIZE * 2 + 1 + MAX_REF_LINE_IDX) * 2 - 1;
+
+  beginYNeighborBuffer = getPredictorPtr(COMP_Y);
+  endYNeighborBuffer = beginYNeighborBuffer + bufferStride;
+  beginCbNeighborBuffer = getPredictorPtr(COMP_Cb);
+  endCbNeighborBuffer = beginCbNeighborBuffer + bufferStride;
+  beginCrNeighborBuffer = getPredictorPtr(COMP_Cr);
+  endCrNeighborBuffer = beginCrNeighborBuffer + bufferStride;
+
+  add_approx((unsigned long long)beginYNeighborBuffer, (unsigned long long)endYNeighborBuffer);
+  add_approx((unsigned long long)beginCbNeighborBuffer, (unsigned long long)endCbNeighborBuffer);
+  add_approx((unsigned long long)beginCrNeighborBuffer, (unsigned long long)endCrNeighborBuffer);
+}
+
+void IntraPrediction::removeIntraApprox() {
+  Pel *beginYNeighborBuffer, *endYNeighborBuffer;
+  Pel *beginCbNeighborBuffer, *endCbNeighborBuffer;
+  Pel *beginCrNeighborBuffer, *endCrNeighborBuffer;
+
+  int bufferStride = (MAX_CU_SIZE * 2 + 1 + MAX_REF_LINE_IDX) * 2 - 1;
+
+  beginYNeighborBuffer = getPredictorPtr(COMP_Y);
+  endYNeighborBuffer = beginYNeighborBuffer + bufferStride;
+  beginCbNeighborBuffer = getPredictorPtr(COMP_Cb);
+  endCbNeighborBuffer = beginCbNeighborBuffer + bufferStride;
+  beginCrNeighborBuffer = getPredictorPtr(COMP_Cr);
+  endCrNeighborBuffer = beginCrNeighborBuffer + bufferStride;
+
+  remove_approx((unsigned long long)beginYNeighborBuffer, (unsigned long long)endYNeighborBuffer);
+  remove_approx((unsigned long long)beginCbNeighborBuffer, (unsigned long long)endCbNeighborBuffer);
+  remove_approx((unsigned long long)beginCrNeighborBuffer, (unsigned long long)endCrNeighborBuffer);
 }
 
 } // namespace vvenc
